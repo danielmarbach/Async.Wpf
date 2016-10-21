@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="Caliburn.Tryouts.ShellView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+		            DockPanel.Dock="Top">
+            <Button x:Name="ShowPageOne"
+			        Content="Show Page One" />
+            <Button x:Name="ShowPageTwo"
+			        Content="Show Page Two" />
+
+            <StackPanel>
+                <TextBox x:Name="Name" />
+                <Button x:Name="SayHello"
+                Content="Click Me" />
+                <Button x:Name="Cancel"
+                Content="Cancel Me" />
+            </StackPanel>
+        </StackPanel>
+        <StatusBar Height="20" x:Name="status">
+            <TextBox x:Name="statusTextBox" />
+        </StatusBar>
+    </DockPanel>
+</UserControl>
