@@ -11,7 +11,7 @@ namespace WpfNative.Tryouts
         public static async Task<int> DownloadAndCountBytesAsync(string url, CancellationToken token = default(CancellationToken))
         {
             await Task.Delay(TimeSpan.FromSeconds(3), token).ConfigureAwait(false);
-            using (var client = new HttpClient())
+            var client = new HttpClient();
             using (var response = await client.GetAsync(url, token).ConfigureAwait(false))
             {
                 var data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
