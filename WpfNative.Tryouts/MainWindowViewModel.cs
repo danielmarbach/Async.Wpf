@@ -32,7 +32,7 @@ namespace WpfNative.Tryouts
             Operations = new ObservableCollection<CountUrlBytesViewModel>();
             CountUrlBytesCommand = new DelegateCommand(() =>
             {
-                var countBytes = AsyncCommand.Create(token => MyService.DownloadAndCountBytesAsync(Url, token));
+                var countBytes = AsyncCommand.AsCommand(token => MyService.DownloadAndCountBytesAsync(Url, token));
                 countBytes.Execute(null);
                 Operations.Add(new CountUrlBytesViewModel(this, Url, countBytes));
             });

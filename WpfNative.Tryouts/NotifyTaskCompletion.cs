@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -97,7 +94,7 @@ namespace WpfNative.Tryouts
         /// </summary>
         /// <param name="task">The task to watch.</param>
         /// <returns>A new task notifier watching the specified task.</returns>
-        public static INotifyTaskCompletion Create(Task task)
+        public static INotifyTaskCompletion AsTaskCompletion(this Task task)
         {
             return new NotifyTaskCompletionImplementation(task);
         }
@@ -108,7 +105,7 @@ namespace WpfNative.Tryouts
         /// <typeparam name="TResult">The type of the task result.</typeparam>
         /// <param name="task">The task to watch.</param>
         /// <returns>A new task notifier watching the specified task.</returns>
-        public static INotifyTaskCompletion<TResult> Create<TResult>(Task<TResult> task)
+        public static INotifyTaskCompletion<TResult> AsTaskCompletion<TResult>(this Task<TResult> task)
         {
             return new NotifyTaskCompletionImplementation<TResult>(task);
         }
@@ -118,9 +115,9 @@ namespace WpfNative.Tryouts
         /// </summary>
         /// <param name="asyncAction">The asynchronous code to execute.</param>
         /// <returns>A new task notifier watching the returned task.</returns>
-        public static INotifyTaskCompletion Create(Func<Task> asyncAction)
+        public static INotifyTaskCompletion AsTaskCompletion(this Func<Task> asyncAction)
         {
-            return Create(asyncAction());
+            return AsTaskCompletion(asyncAction());
         }
 
         /// <summary>
@@ -128,9 +125,9 @@ namespace WpfNative.Tryouts
         /// </summary>
         /// <param name="asyncAction">The asynchronous code to execute.</param>
         /// <returns>A new task notifier watching the returned task.</returns>
-        public static INotifyTaskCompletion<TResult> Create<TResult>(Func<Task<TResult>> asyncAction)
+        public static INotifyTaskCompletion<TResult> AsTaskCompletion<TResult>(this Func<Task<TResult>> asyncAction)
         {
-            return Create(asyncAction());
+            return AsTaskCompletion(asyncAction());
         }
 
         /// <summary>
@@ -151,7 +148,7 @@ namespace WpfNative.Tryouts
                     return;
                 }
 
-                var scheduler = (SynchronizationContext.Current == null) ? TaskScheduler.Current : TaskScheduler.FromCurrentSynchronizationContext();
+                var scheduler = SynchronizationContext.Current == null ? TaskScheduler.Current : TaskScheduler.FromCurrentSynchronizationContext();
                 TaskCompleted = task.ContinueWith(t =>
                 {
                     var propertyChanged = PropertyChanged;
@@ -182,17 +179,17 @@ namespace WpfNative.Tryouts
                 scheduler);
             }
 
-            public Task Task { get; private set; }
-            public Task TaskCompleted { get; private set; }
-            public TaskStatus Status { get { return Task.Status; } }
-            public bool IsCompleted { get { return Task.IsCompleted; } }
-            public bool IsNotCompleted { get { return !Task.IsCompleted; } }
-            public bool IsSuccessfullyCompleted { get { return Task.Status == TaskStatus.RanToCompletion; } }
-            public bool IsCanceled { get { return Task.IsCanceled; } }
-            public bool IsFaulted { get { return Task.IsFaulted; } }
-            public AggregateException Exception { get { return Task.Exception; } }
-            public Exception InnerException { get { return (Exception == null) ? null : Exception.InnerException; } }
-            public string ErrorMessage { get { return (InnerException == null) ? null : InnerException.Message; } }
+            public Task Task { get; }
+            public Task TaskCompleted { get; }
+            public TaskStatus Status => Task.Status;
+            public bool IsCompleted => Task.IsCompleted;
+            public bool IsNotCompleted => !Task.IsCompleted;
+            public bool IsSuccessfullyCompleted => Task.Status == TaskStatus.RanToCompletion;
+            public bool IsCanceled => Task.IsCanceled;
+            public bool IsFaulted => Task.IsFaulted;
+            public AggregateException Exception => Task.Exception;
+            public Exception InnerException => Exception?.InnerException;
+            public string ErrorMessage => InnerException?.Message;
 
             public event PropertyChangedEventHandler PropertyChanged;
         }
@@ -216,7 +213,7 @@ namespace WpfNative.Tryouts
                     return;
                 }
 
-                var scheduler = (SynchronizationContext.Current == null) ? TaskScheduler.Current : TaskScheduler.FromCurrentSynchronizationContext();
+                var scheduler = SynchronizationContext.Current == null ? TaskScheduler.Current : TaskScheduler.FromCurrentSynchronizationContext();
                 TaskCompleted = task.ContinueWith(t =>
                 {
                     var propertyChanged = PropertyChanged;
@@ -248,19 +245,19 @@ namespace WpfNative.Tryouts
                 scheduler);
             }
 
-            public Task<TResult> Task { get; private set; }
-            Task INotifyTaskCompletion.Task { get { return Task; } }
-            public Task TaskCompleted { get; private set; }
-            public TResult Result { get { return (Task.Status == TaskStatus.RanToCompletion) ? Task.Result : default(TResult); } }
-            public TaskStatus Status { get { return Task.Status; } }
-            public bool IsCompleted { get { return Task.IsCompleted; } }
-            public bool IsNotCompleted { get { return !Task.IsCompleted; } }
-            public bool IsSuccessfullyCompleted { get { return Task.Status == TaskStatus.RanToCompletion; } }
-            public bool IsCanceled { get { return Task.IsCanceled; } }
-            public bool IsFaulted { get { return Task.IsFaulted; } }
-            public AggregateException Exception { get { return Task.Exception; } }
-            public Exception InnerException { get { return (Exception == null) ? null : Exception.InnerException; } }
-            public string ErrorMessage { get { return (InnerException == null) ? null : InnerException.Message; } }
+            public Task<TResult> Task { get; }
+            Task INotifyTaskCompletion.Task => Task;
+            public Task TaskCompleted { get; }
+            public TResult Result => (Task.Status == TaskStatus.RanToCompletion) ? Task.Result : default(TResult);
+            public TaskStatus Status => Task.Status;
+            public bool IsCompleted => Task.IsCompleted;
+            public bool IsNotCompleted => !Task.IsCompleted;
+            public bool IsSuccessfullyCompleted => Task.Status == TaskStatus.RanToCompletion;
+            public bool IsCanceled => Task.IsCanceled;
+            public bool IsFaulted => Task.IsFaulted;
+            public AggregateException Exception => Task.Exception;
+            public Exception InnerException => Exception?.InnerException;
+            public string ErrorMessage => InnerException?.Message;
 
             public event PropertyChangedEventHandler PropertyChanged;
         }

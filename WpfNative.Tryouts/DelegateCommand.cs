@@ -6,6 +6,12 @@ namespace WpfNative.Tryouts
     public sealed class DelegateCommand : ICommand
     {
         private readonly Action _command;
+        private readonly Action<object> _commandWithState;
+
+        public DelegateCommand(Action<object> command)
+        {
+            _commandWithState = command;
+        }
 
         public DelegateCommand(Action command)
         {
@@ -14,7 +20,14 @@ namespace WpfNative.Tryouts
 
         public void Execute(object parameter)
         {
-            _command();
+            if (_command != null)
+            {
+                _command();
+            }
+            else
+            {
+                _commandWithState(parameter);
+            }
         }
 
         bool ICommand.CanExecute(object parameter)

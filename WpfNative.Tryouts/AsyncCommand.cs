@@ -36,11 +36,10 @@ namespace WpfNative.Tryouts
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
         }
     }
 
-    public class AsyncCommand<TResult> : AsyncCommandBase, INotifyPropertyChanged
+    public class AsyncCommand<TResult> : AsyncCommandBase
     {
         private readonly Func<object, CancellationToken, Task<TResult>> _command;
         private readonly CancelAsyncCommand _cancelCommand;
@@ -62,7 +61,7 @@ namespace WpfNative.Tryouts
         public override async Task ExecuteAsync(object parameter)
         {
             _cancelCommand.NotifyCommandStarting();
-            Execution = NotifyTaskCompletion.Create(_command(_state, _cancelCommand.Token));
+            Execution = _command(_state, _cancelCommand.Token).AsTaskCompletion();
             RaiseCanExecuteChanged();
             await Execution.TaskCompleted;
             _cancelCommand.NotifyCommandFinished();
@@ -82,13 +81,6 @@ namespace WpfNative.Tryouts
                 _execution = value;
                 OnPropertyChanged();
             }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
 
         sealed class CancelAsyncCommand : ICommand
@@ -141,7 +133,7 @@ namespace WpfNative.Tryouts
     // extended from original to avoid closure capturing
     public static class AsyncCommand
     {
-        public static AsyncCommand<object> Create(Func<Task> command)
+        public static AsyncCommand<object> AsCommand(this Func<Task> command)
         {
             return new AsyncCommand<object>(async (state, _) =>
             {
@@ -151,7 +143,7 @@ namespace WpfNative.Tryouts
             }, command);
         }
 
-        public static AsyncCommand<object> Create(Func<object, Task> command, object state)
+        public static AsyncCommand<object> AsCommand(this Func<object, Task> command, object state)
         {
             return new AsyncCommand<object>(async (s, _) =>
             {
@@ -161,7 +153,7 @@ namespace WpfNative.Tryouts
             }, Tuple.Create(command, state));
         }
 
-        public static AsyncCommand<TResult> Create<TResult>(Func<Task<TResult>> command)
+        public static AsyncCommand<TResult> AsCommand<TResult>(this Func<Task<TResult>> command)
         {
             return new AsyncCommand<TResult>((s, _) =>
             {
@@ -170,7 +162,7 @@ namespace WpfNative.Tryouts
             }, command);
         }
 
-        public static AsyncCommand<TResult> Create<TResult>(Func<object, Task<TResult>> command, object state)
+        public static AsyncCommand<TResult> AsCommand<TResult>(this Func<object, Task<TResult>> command, object state)
         {
             return new AsyncCommand<TResult>((s, _) =>
             {
@@ -179,7 +171,7 @@ namespace WpfNative.Tryouts
             }, Tuple.Create(command, state));
         }
 
-        public static AsyncCommand<object> Create(Func<CancellationToken, Task> command)
+        public static AsyncCommand<object> AsCommand(this Func<CancellationToken, Task> command)
         {
             return new AsyncCommand<object>(async (state, token) =>
             {
@@ -189,7 +181,7 @@ namespace WpfNative.Tryouts
             }, command);
         }
 
-        public static AsyncCommand<object> Create(Func<object, CancellationToken, Task> command, object state)
+        public static AsyncCommand<object> AsCommand(this Func<object, CancellationToken, Task> command, object state)
         {
             return new AsyncCommand<object>(async (s, token) =>
             {
@@ -199,7 +191,7 @@ namespace WpfNative.Tryouts
             }, Tuple.Create(command, state));
         }
 
-        public static AsyncCommand<TResult> Create<TResult>(Func<CancellationToken, Task<TResult>> command)
+        public static AsyncCommand<TResult> AsCommand<TResult>(this Func<CancellationToken, Task<TResult>> command)
         {
             return new AsyncCommand<TResult>((s, token) =>
             {
@@ -208,7 +200,7 @@ namespace WpfNative.Tryouts
             }, command);
         }
 
-        public static AsyncCommand<TResult> Create<TResult>(Func<object, CancellationToken, Task<TResult>> command, object state)
+        public static AsyncCommand<TResult> AsCommand<TResult>(this Func<object, CancellationToken, Task<TResult>> command, object state)
         {
             return new AsyncCommand<TResult>(command, state);
         }
